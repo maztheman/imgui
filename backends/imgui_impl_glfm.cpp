@@ -82,9 +82,9 @@
 // GLFW data
 enum GlfmClientApi
 {
-    GlfwClientApi_Unknown,
-    GlfwClientApi_OpenGL,
-    GlfwClientApi_Metal
+    GlfmClientApi_Unknown,
+    GlfmClientApi_OpenGL,
+    GlfmClientApi_Metal
 };
 
 struct ImGui_ImplGlfm_Data
@@ -263,14 +263,16 @@ bool ImGui_ImplGlfm_TouchCallback(GLFMDisplay* display, int touch, int phase, do
     ImGui_ImplGlfm_Data* bd = ImGui_ImplGlfm_GetBackendData();
     bool handled = false;
      if (bd->PrevUserCallbackTouch != nullptr && display == bd->Display)
-        handled = bd->PrevUserCallbackTouch(display, touch, phase, x, y);
+        handled = bd->PrevUserCallbackTouch(display, touch, (GLFMTouchPhase)phase, x, y);
 
     if (!glfmHasTouch(display))
-        return;
+        return false;
 
     ImGuiIO& io = ImGui::GetIO();
     io.AddMousePosEvent((float)x, (float)y);
     bd->LastValidMousePos = ImVec2((float)x, (float)y);        
+
+    return handled;
 }
 
 #if 0
@@ -339,7 +341,7 @@ void ImGui_ImplGlfm_InstallCallbacks(GLFMDisplay* display)
 
 void ImGui_ImplGlfw_RestoreCallbacks(GLFMDisplay* display)
 {
-    ImGui_ImplGlfm_Data* bd = ImGui_ImplGlfw_GetBackendData();
+    ImGui_ImplGlfm_Data* bd = ImGui_ImplGlfm_GetBackendData();
     IM_ASSERT(bd->InstalledCallbacks == true && "Callbacks not installed!");
     IM_ASSERT(bd->Display == display);
 
@@ -545,7 +547,7 @@ void ImGui_ImplGlfm_NewFrame()
     // Setup display size (every frame to accommodate for window resizing)
     int w, h;
     int display_w, display_h;
-    glfmDisplaySize(bd->Window, &w, &h);
+    glfmDisplaySize(bd->Display, &w, &h);
     //I'm unaware that the frame buffer can be different size then the display.
     //glfwGetFramebufferSize(bd->Window, &display_w, &display_h);
     display_w = w;
