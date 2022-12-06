@@ -258,12 +258,12 @@ void ImGui_ImplGlfw_WindowFocusCallback(GLFWwindow* window, int focused)
 
 #endif
 
-bool ImGui_ImplGlfm_TouchCallback(GLFMDisplay* display, int touch, int phase, double x, double y)
+bool ImGui_ImplGlfm_TouchCallback(GLFMDisplay* display, int touch, GLFMTouchPhase phase, double x, double y)
 {
     ImGui_ImplGlfm_Data* bd = ImGui_ImplGlfm_GetBackendData();
     bool handled = false;
      if (bd->PrevUserCallbackTouch != nullptr && display == bd->Display)
-        handled = bd->PrevUserCallbackTouch(display, touch, (GLFMTouchPhase)phase, x, y);
+        handled = bd->PrevUserCallbackTouch(display, touch, phase, x, y);
 
     if (!glfmHasTouch(display))
         return false;

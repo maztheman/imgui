@@ -16,6 +16,8 @@
 #pragma once
 #include "imgui.h"      // IMGUI_IMPL_API
 
+#include "GLFM/glfm_enums.h"
+
 struct GLFMDisplay;
 
 IMGUI_IMPL_API bool     ImGui_ImplGlfm_InitForOpenGL(GLFMDisplay* display, bool install_callbacks);
@@ -33,7 +35,7 @@ IMGUI_IMPL_API void     ImGui_ImplGlfm_RestoreCallbacks(GLFMDisplay* display);
 // GLFW callbacks (individual callbacks to call if you didn't install callbacks)
 //IMGUI_IMPL_API void     ImGui_ImplGlfw_WindowFocusCallback(GLFWwindow* window, int focused);        // Since 1.84
 //IMGUI_IMPL_API void     ImGui_ImplGlfw_CursorEnterCallback(GLFWwindow* window, int entered);        // Since 1.84
-IMGUI_IMPL_API bool     ImGui_ImplGlfm_TouchCallback(GLFMDisplay* display, int touch, int phase, double x, double y);
+IMGUI_IMPL_API bool     ImGui_ImplGlfm_TouchCallback(GLFMDisplay* display, int touch, GLFMTouchPhase phase, double x, double y);
 //IMGUI_IMPL_API void     ImGui_ImplGlfw_MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 //IMGUI_IMPL_API void     ImGui_ImplGlfw_ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 //IMGUI_IMPL_API void     ImGui_ImplGlfw_KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
