@@ -547,7 +547,7 @@ void ImGui_ImplGlfm_NewFrame()
     // Setup display size (every frame to accommodate for window resizing)
     int w, h;
     int display_w, display_h;
-    glfmDisplaySize(bd->Display, &w, &h);
+    glfmGetDisplaySize(bd->Display, &w, &h);
     //I'm unaware that the frame buffer can be different size then the display.
     //glfwGetFramebufferSize(bd->Window, &display_w, &display_h);
     display_w = w;
