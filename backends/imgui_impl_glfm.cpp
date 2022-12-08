@@ -273,7 +273,7 @@ bool ImGui_ImplGlfm_TouchCallback(GLFMDisplay* display, int touch, GLFMTouchPhas
     bd->LastValidMousePos = ImVec2((float)x, (float)y);        
 
     if (touch == 0) {
-        io.AddMouseButtonEvent(0, phase == GLFMTouchPhaseBegan);
+        io.AddMouseButtonEvent(0, phase == GLFMTouchPhaseBegan || phase == GLFMTouchPhaseMoved);
     }
 
     return handled;
