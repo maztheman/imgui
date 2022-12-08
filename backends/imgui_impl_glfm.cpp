@@ -272,6 +272,12 @@ bool ImGui_ImplGlfm_TouchCallback(GLFMDisplay* display, int touch, GLFMTouchPhas
     io.AddMousePosEvent((float)x, (float)y);
     bd->LastValidMousePos = ImVec2((float)x, (float)y);        
 
+    ImGuiIO& io = ImGui::GetIO();
+
+    if (touch == 0) {
+        io.AddMouseButtonEvent(0, phase == GLFMTouchPhaseBegan);
+    }
+
     return handled;
 }
 
@@ -423,19 +429,13 @@ void ImGui_ImplGlfm_Shutdown()
 
 static void ImGui_ImplGlfw_UpdateMouseData()
 {
-    ImGui_ImplGlfw_Data* bd = ImGui_ImplGlfw_GetBackendData();
+    ImGui_ImplGlfm_Data* bd = ImGui_ImplGlfm_GetBackendData();
     ImGuiIO& io = ImGui::GetIO();
-
-    if (glfwGetInputMode(bd->Window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
-    {
-        io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
-        return;
-    }
 
 #ifdef __EMSCRIPTEN__
     const bool is_app_focused = true;
 #else
-    const bool is_app_focused = glfwGetWindowAttrib(bd->Window, GLFW_FOCUSED) != 0;
+    const bool is_app_focused = true;
 #endif
     if (is_app_focused)
     {
