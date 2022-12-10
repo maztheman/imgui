@@ -320,12 +320,13 @@ void ImGui_ImplGlfm_KeyCallback(GLFMDisplay* display, int keycode, int scancode,
  //   ImGui_ImplGlfm_UpdateKeyModifiers(mods);
  // At some point fix key func to pass glfm mods not android
  //Also invent more keycodes to handle all scancodes
+    ImGuiIO& io = ImGui::GetIO();
     io.AddKeyEvent(ImGuiMod_Ctrl,  (mods & AMETA_CTRL_ON)  != 0);
     io.AddKeyEvent(ImGuiMod_Shift, (mods & AMETA_SHIFT_ON) != 0);
     io.AddKeyEvent(ImGuiMod_Alt,   (mods & AMETA_ALT_ON)   != 0);
     io.AddKeyEvent(ImGuiMod_Super, (mods & AMETA_META_ON)  != 0);
 
-    ImGuiIO& io = ImGui::GetIO();
+
     ImGuiKey imgui_key = ImGui_ImplGlfm_ScanCodeToImGuiKey(scancode);
     io.AddKeyEvent(imgui_key, (action == GLFMKeyActionPressed));
     io.SetKeyEventNativeData(imgui_key, keycode, scancode); // To support legacy indexing (<1.87 user code)
