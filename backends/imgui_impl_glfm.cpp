@@ -308,7 +308,7 @@ static ImGuiKey ImGui_ImplGlfm_ScanCodeToImGuiKey(int32_t scancode)
 
 
 
-void ImGui_ImplGlfm_KeyCallback(GLFMDisplay* display, int keycode, int scancode, int action, int mods)
+bool ImGui_ImplGlfm_KeyCallback(GLFMDisplay* display, int keycode, int scancode, int action, int mods)
 {
     ImGui_ImplGlfm_Data* bd = ImGui_ImplGlfm_GetBackendData();
     if (bd->PrevUserCallbackKey != nullptr && display == bd->Display)
