@@ -332,16 +332,6 @@ void ImGui_ImplGlfm_KeyCallback(GLFMDisplay* display, int keycode, int scancode,
     io.SetKeyEventNativeData(imgui_key, keycode, scancode); // To support legacy indexing (<1.87 user code)
 }
 
-void ImGui_ImplGlfw_WindowFocusCallback(GLFWwindow* window, int focused)
-{
-    ImGui_ImplGlfw_Data* bd = ImGui_ImplGlfw_GetBackendData();
-    if (bd->PrevUserCallbackWindowFocus != nullptr && window == bd->Window)
-        bd->PrevUserCallbackWindowFocus(window, focused);
-
-    ImGuiIO& io = ImGui::GetIO();
-    io.AddFocusEvent(focused != 0);
-}
-
 #endif
 
 bool ImGui_ImplGlfm_TouchCallback(GLFMDisplay* display, int touch, GLFMTouchPhase phase, double x, double y)
