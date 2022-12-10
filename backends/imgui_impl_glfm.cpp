@@ -315,7 +315,7 @@ bool ImGui_ImplGlfm_KeyCallback(GLFMDisplay* display, int keycode, int scancode,
         bd->PrevUserCallbackKey(display, keycode, scancode, action, mods);
 
     if (action != GLFMKeyActionPressed && action != GLFMKeyActionReleased)
-        return;
+        return false;
 
  //   ImGui_ImplGlfm_UpdateKeyModifiers(mods);
  // At some point fix key func to pass glfm mods not android
@@ -330,6 +330,7 @@ bool ImGui_ImplGlfm_KeyCallback(GLFMDisplay* display, int keycode, int scancode,
     ImGuiKey imgui_key = ImGui_ImplGlfm_ScanCodeToImGuiKey(scancode);
     io.AddKeyEvent(imgui_key, (action == GLFMKeyActionPressed));
     io.SetKeyEventNativeData(imgui_key, keycode, scancode); // To support legacy indexing (<1.87 user code)
+    return true;
 }
 
 #endif
