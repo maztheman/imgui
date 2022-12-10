@@ -38,5 +38,5 @@ IMGUI_IMPL_API void     ImGui_ImplGlfm_RestoreCallbacks(GLFMDisplay* display);
 IMGUI_IMPL_API bool     ImGui_ImplGlfm_TouchCallback(GLFMDisplay* display, int touch, GLFMTouchPhase phase, double x, double y);
 //IMGUI_IMPL_API void     ImGui_ImplGlfw_MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 //IMGUI_IMPL_API void     ImGui_ImplGlfw_ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-//IMGUI_IMPL_API void     ImGui_ImplGlfw_KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+IMGUI_IMPL_API void     ImGui_ImplGlfm_KeyCallback(GLFMDisplay* display, int key, int scancode, int action, int mods);
 IMGUI_IMPL_API void     ImGui_ImplGlfm_CharCallback(GLFMDisplay* display, const char *utf8, int modifiers);

@@ -68,7 +68,8 @@
 
 // GLFM6
 #include <GLFM/glfm.h>
-
+#include <android/keycodes.h>
+#include <android/input.h>
 // We gather version tests as define in order to easily see which features are version-dependent.
 #define GLFM_VERSION_COMBINED           (GLFM_VERSION_MAJOR * 1000 + GLFM_VERSION_MINOR * 100 + GLFM_VERSION_REVISION)
 #ifdef GLFM_RESIZE_NESW_CURSOR          // Let's be nice to people who pulled GLFW between 2019-04-16 (3.4 define) and 2019-11-29 (cursors defines) // FIXME: Remove when GLFW 3.4 is released?
@@ -103,7 +104,7 @@ struct ImGui_ImplGlfm_Data
     //GLFWcursorenterfun      PrevUserCallbackCursorEnter;
     GLFMTouchFunc             PrevUserCallbackTouch;
     //GLFWscrollfun           PrevUserCallbackScroll;
-    //GLFWkeyfun              PrevUserCallbackKey;
+    GLFMKeyFunc               PrevUserCallbackKey;
     GLFMCharFunc              PrevUserCallbackChar;
     //GLFWmonitorfun          PrevUserCallbackMonitor;
 
@@ -189,60 +190,144 @@ void ImGui_ImplGlfw_ScrollCallback(GLFWwindow* window, double xoffset, double yo
 
 #endif
 
-#if 0
+#if 1
 
-static int ImGui_ImplGlfw_TranslateUntranslatedKey(int key, int scancode)
+
+static ImGuiKey ImGui_ImplGlfm_ScanCodeToImGuiKey(int32_t scancode)
 {
-#if GLFW_HAS_GETKEYNAME && !defined(__EMSCRIPTEN__)
-    // GLFW 3.1+ attempts to "untranslate" keys, which goes the opposite of what every other framework does, making using lettered shortcuts difficult.
-    // (It had reasons to do so: namely GLFW is/was more likely to be used for WASD-type game controls rather than lettered shortcuts, but IHMO the 3.1 change could have been done differently)
-    // See https://github.com/glfw/glfw/issues/1502 for details.
-    // Adding a workaround to undo this (so our keys are translated->untranslated->translated, likely a lossy process).
-    // This won't cover edge cases but this is at least going to cover common cases.
-    if (key >= GLFW_KEY_KP_0 && key <= GLFW_KEY_KP_EQUAL)
-        return key;
-    GLFWerrorfun prev_error_callback = glfwSetErrorCallback(nullptr);
-    const char* key_name = glfwGetKeyName(key, scancode);
-    glfwSetErrorCallback(prev_error_callback);
-#if (GLFW_VERSION_COMBINED >= 3300) // Eat errors (see #5908)
-    (void)glfwGetError(NULL);
-#endif
-    if (key_name && key_name[0] != 0 && key_name[1] == 0)
+    switch (scancode)
     {
-        const char char_names[] = "`-=[]\\,;\'./";
-        const int char_keys[] = { GLFW_KEY_GRAVE_ACCENT, GLFW_KEY_MINUS, GLFW_KEY_EQUAL, GLFW_KEY_LEFT_BRACKET, GLFW_KEY_RIGHT_BRACKET, GLFW_KEY_BACKSLASH, GLFW_KEY_COMMA, GLFW_KEY_SEMICOLON, GLFW_KEY_APOSTROPHE, GLFW_KEY_PERIOD, GLFW_KEY_SLASH, 0 };
-        IM_ASSERT(IM_ARRAYSIZE(char_names) == IM_ARRAYSIZE(char_keys));
-        if (key_name[0] >= '0' && key_name[0] <= '9')               { key = GLFW_KEY_0 + (key_name[0] - '0'); }
-        else if (key_name[0] >= 'A' && key_name[0] <= 'Z')          { key = GLFW_KEY_A + (key_name[0] - 'A'); }
-        else if (key_name[0] >= 'a' && key_name[0] <= 'z')          { key = GLFW_KEY_A + (key_name[0] - 'a'); }
-        else if (const char* p = strchr(char_names, key_name[0]))   { key = char_keys[p - char_names]; }
+        case AKEYCODE_TAB:                  return ImGuiKey_Tab;
+        case AKEYCODE_DPAD_LEFT:            return ImGuiKey_LeftArrow;
+        case AKEYCODE_DPAD_RIGHT:           return ImGuiKey_RightArrow;
+        case AKEYCODE_DPAD_UP:              return ImGuiKey_UpArrow;
+        case AKEYCODE_DPAD_DOWN:            return ImGuiKey_DownArrow;
+        case AKEYCODE_PAGE_UP:              return ImGuiKey_PageUp;
+        case AKEYCODE_PAGE_DOWN:            return ImGuiKey_PageDown;
+        case AKEYCODE_MOVE_HOME:            return ImGuiKey_Home;
+        case AKEYCODE_MOVE_END:             return ImGuiKey_End;
+        case AKEYCODE_INSERT:               return ImGuiKey_Insert;
+        case AKEYCODE_FORWARD_DEL:          return ImGuiKey_Delete;
+        case AKEYCODE_DEL:                  return ImGuiKey_Backspace;
+        case AKEYCODE_SPACE:                return ImGuiKey_Space;
+        case AKEYCODE_ENTER:                return ImGuiKey_Enter;
+        case AKEYCODE_ESCAPE:               return ImGuiKey_Escape;
+        case AKEYCODE_APOSTROPHE:           return ImGuiKey_Apostrophe;
+        case AKEYCODE_COMMA:                return ImGuiKey_Comma;
+        case AKEYCODE_MINUS:                return ImGuiKey_Minus;
+        case AKEYCODE_PERIOD:               return ImGuiKey_Period;
+        case AKEYCODE_SLASH:                return ImGuiKey_Slash;
+        case AKEYCODE_SEMICOLON:            return ImGuiKey_Semicolon;
+        case AKEYCODE_EQUALS:               return ImGuiKey_Equal;
+        case AKEYCODE_LEFT_BRACKET:         return ImGuiKey_LeftBracket;
+        case AKEYCODE_BACKSLASH:            return ImGuiKey_Backslash;
+        case AKEYCODE_RIGHT_BRACKET:        return ImGuiKey_RightBracket;
+        case AKEYCODE_GRAVE:                return ImGuiKey_GraveAccent;
+        case AKEYCODE_CAPS_LOCK:            return ImGuiKey_CapsLock;
+        case AKEYCODE_SCROLL_LOCK:          return ImGuiKey_ScrollLock;
+        case AKEYCODE_NUM_LOCK:             return ImGuiKey_NumLock;
+        case AKEYCODE_SYSRQ:                return ImGuiKey_PrintScreen;
+        case AKEYCODE_BREAK:                return ImGuiKey_Pause;
+        case AKEYCODE_NUMPAD_0:             return ImGuiKey_Keypad0;
+        case AKEYCODE_NUMPAD_1:             return ImGuiKey_Keypad1;
+        case AKEYCODE_NUMPAD_2:             return ImGuiKey_Keypad2;
+        case AKEYCODE_NUMPAD_3:             return ImGuiKey_Keypad3;
+        case AKEYCODE_NUMPAD_4:             return ImGuiKey_Keypad4;
+        case AKEYCODE_NUMPAD_5:             return ImGuiKey_Keypad5;
+        case AKEYCODE_NUMPAD_6:             return ImGuiKey_Keypad6;
+        case AKEYCODE_NUMPAD_7:             return ImGuiKey_Keypad7;
+        case AKEYCODE_NUMPAD_8:             return ImGuiKey_Keypad8;
+        case AKEYCODE_NUMPAD_9:             return ImGuiKey_Keypad9;
+        case AKEYCODE_NUMPAD_DOT:           return ImGuiKey_KeypadDecimal;
+        case AKEYCODE_NUMPAD_DIVIDE:        return ImGuiKey_KeypadDivide;
+        case AKEYCODE_NUMPAD_MULTIPLY:      return ImGuiKey_KeypadMultiply;
+        case AKEYCODE_NUMPAD_SUBTRACT:      return ImGuiKey_KeypadSubtract;
+        case AKEYCODE_NUMPAD_ADD:           return ImGuiKey_KeypadAdd;
+        case AKEYCODE_NUMPAD_ENTER:         return ImGuiKey_KeypadEnter;
+        case AKEYCODE_NUMPAD_EQUALS:        return ImGuiKey_KeypadEqual;
+        case AKEYCODE_CTRL_LEFT:            return ImGuiKey_LeftCtrl;
+        case AKEYCODE_SHIFT_LEFT:           return ImGuiKey_LeftShift;
+        case AKEYCODE_ALT_LEFT:             return ImGuiKey_LeftAlt;
+        case AKEYCODE_META_LEFT:            return ImGuiKey_LeftSuper;
+        case AKEYCODE_CTRL_RIGHT:           return ImGuiKey_RightCtrl;
+        case AKEYCODE_SHIFT_RIGHT:          return ImGuiKey_RightShift;
+        case AKEYCODE_ALT_RIGHT:            return ImGuiKey_RightAlt;
+        case AKEYCODE_META_RIGHT:           return ImGuiKey_RightSuper;
+        case AKEYCODE_MENU:                 return ImGuiKey_Menu;
+        case AKEYCODE_0:                    return ImGuiKey_0;
+        case AKEYCODE_1:                    return ImGuiKey_1;
+        case AKEYCODE_2:                    return ImGuiKey_2;
+        case AKEYCODE_3:                    return ImGuiKey_3;
+        case AKEYCODE_4:                    return ImGuiKey_4;
+        case AKEYCODE_5:                    return ImGuiKey_5;
+        case AKEYCODE_6:                    return ImGuiKey_6;
+        case AKEYCODE_7:                    return ImGuiKey_7;
+        case AKEYCODE_8:                    return ImGuiKey_8;
+        case AKEYCODE_9:                    return ImGuiKey_9;
+        case AKEYCODE_A:                    return ImGuiKey_A;
+        case AKEYCODE_B:                    return ImGuiKey_B;
+        case AKEYCODE_C:                    return ImGuiKey_C;
+        case AKEYCODE_D:                    return ImGuiKey_D;
+        case AKEYCODE_E:                    return ImGuiKey_E;
+        case AKEYCODE_F:                    return ImGuiKey_F;
+        case AKEYCODE_G:                    return ImGuiKey_G;
+        case AKEYCODE_H:                    return ImGuiKey_H;
+        case AKEYCODE_I:                    return ImGuiKey_I;
+        case AKEYCODE_J:                    return ImGuiKey_J;
+        case AKEYCODE_K:                    return ImGuiKey_K;
+        case AKEYCODE_L:                    return ImGuiKey_L;
+        case AKEYCODE_M:                    return ImGuiKey_M;
+        case AKEYCODE_N:                    return ImGuiKey_N;
+        case AKEYCODE_O:                    return ImGuiKey_O;
+        case AKEYCODE_P:                    return ImGuiKey_P;
+        case AKEYCODE_Q:                    return ImGuiKey_Q;
+        case AKEYCODE_R:                    return ImGuiKey_R;
+        case AKEYCODE_S:                    return ImGuiKey_S;
+        case AKEYCODE_T:                    return ImGuiKey_T;
+        case AKEYCODE_U:                    return ImGuiKey_U;
+        case AKEYCODE_V:                    return ImGuiKey_V;
+        case AKEYCODE_W:                    return ImGuiKey_W;
+        case AKEYCODE_X:                    return ImGuiKey_X;
+        case AKEYCODE_Y:                    return ImGuiKey_Y;
+        case AKEYCODE_Z:                    return ImGuiKey_Z;
+        case AKEYCODE_F1:                   return ImGuiKey_F1;
+        case AKEYCODE_F2:                   return ImGuiKey_F2;
+        case AKEYCODE_F3:                   return ImGuiKey_F3;
+        case AKEYCODE_F4:                   return ImGuiKey_F4;
+        case AKEYCODE_F5:                   return ImGuiKey_F5;
+        case AKEYCODE_F6:                   return ImGuiKey_F6;
+        case AKEYCODE_F7:                   return ImGuiKey_F7;
+        case AKEYCODE_F8:                   return ImGuiKey_F8;
+        case AKEYCODE_F9:                   return ImGuiKey_F9;
+        case AKEYCODE_F10:                  return ImGuiKey_F10;
+        case AKEYCODE_F11:                  return ImGuiKey_F11;
+        case AKEYCODE_F12:                  return ImGuiKey_F12;
+        default:                            return ImGuiKey_None;
     }
-    // if (action == GLFW_PRESS) printf("key %d scancode %d name '%s'\n", key, scancode, key_name);
-#else
-    IM_UNUSED(scancode);
-#endif
-    return key;
 }
 
-void ImGui_ImplGlfw_KeyCallback(GLFWwindow* window, int keycode, int scancode, int action, int mods)
-{
-    ImGui_ImplGlfw_Data* bd = ImGui_ImplGlfw_GetBackendData();
-    if (bd->PrevUserCallbackKey != nullptr && window == bd->Window)
-        bd->PrevUserCallbackKey(window, keycode, scancode, action, mods);
 
-    if (action != GLFW_PRESS && action != GLFW_RELEASE)
+
+void ImGui_ImplGlfm_KeyCallback(GLFMDisplay* display, int keycode, int scancode, int action, int mods)
+{
+    ImGui_ImplGlfm_Data* bd = ImGui_ImplGlfm_GetBackendData();
+    if (bd->PrevUserCallbackKey != nullptr && display == bd->Display)
+        bd->PrevUserCallbackKey(display, keycode, scancode, action, mods);
+
+    if (action != GLFMKeyActionPressed && action != GLFMKeyActionReleased)
         return;
 
-    // Workaround: X11 does not include current pressed/released modifier key in 'mods' flags. https://github.com/glfw/glfw/issues/1630
-    if (int keycode_to_mod = ImGui_ImplGlfw_KeyToModifier(keycode))
-        mods = (action == GLFW_PRESS) ? (mods | keycode_to_mod) : (mods & ~keycode_to_mod);
-    ImGui_ImplGlfw_UpdateKeyModifiers(mods);
-
-    keycode = ImGui_ImplGlfw_TranslateUntranslatedKey(keycode, scancode);
+ //   ImGui_ImplGlfm_UpdateKeyModifiers(mods);
+ // At some point fix key func to pass glfm mods not android
+ //Also invent more keycodes to handle all scancodes
+    io.AddKeyEvent(ImGuiMod_Ctrl,  (mods & AMETA_CTRL_ON)  != 0);
+    io.AddKeyEvent(ImGuiMod_Shift, (mods & AMETA_SHIFT_ON) != 0);
+    io.AddKeyEvent(ImGuiMod_Alt,   (mods & AMETA_ALT_ON)   != 0);
+    io.AddKeyEvent(ImGuiMod_Super, (mods & AMETA_META_ON)  != 0);
 
     ImGuiIO& io = ImGui::GetIO();
-    ImGuiKey imgui_key = ImGui_ImplGlfw_KeyToImGuiKey(keycode);
-    io.AddKeyEvent(imgui_key, (action == GLFW_PRESS));
+    ImGuiKey imgui_key = ImGui_ImplGlfm_ScanCodeToImGuiKey(scancode);
+    io.AddKeyEvent(imgui_key, (action == GLFMKeyActionPressed));
     io.SetKeyEventNativeData(imgui_key, keycode, scancode); // To support legacy indexing (<1.87 user code)
 }
 
@@ -338,7 +423,7 @@ void ImGui_ImplGlfm_InstallCallbacks(GLFMDisplay* display)
     bd->PrevUserCallbackTouch = glfmSetTouchFunc(display, ImGui_ImplGlfm_TouchCallback);
     //bd->PrevUserCallbackMousebutton = glfwSetMouseButtonCallback(display, ImGui_ImplGlfw_MouseButtonCallback);
     //bd->PrevUserCallbackScroll = glfwSetScrollCallback(display, ImGui_ImplGlfw_ScrollCallback);
-    //bd->PrevUserCallbackKey = glfwSetKeyCallback(display, ImGui_ImplGlfw_KeyCallback);
+    bd->PrevUserCallbackKey = glfmSetKeyFunc(display, ImGui_ImplGlfm_KeyCallback);
     bd->PrevUserCallbackChar = glfmSetCharFunc(display, ImGui_ImplGlfm_CharCallback);
     bd->InstalledCallbacks = true;
 }
