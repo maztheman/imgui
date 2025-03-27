@@ -32,9 +32,9 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data)
         // Resize string callback
         // If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we need to set them back to what we want.
         std::string* str = user_data->Str;
-        IM_ASSERT(data->Buf == str->c_str());
+        IM_ASSERT(data->Buf == str->data());
         str->resize(data->BufTextLen);
-        data->Buf = (char*)str->c_str();
+        data->Buf = str->data();
     }
     else if (user_data->ChainCallback)
     {
@@ -54,7 +54,7 @@ bool ImGui::InputText(const char* label, std::string* str, ImGuiInputTextFlags f
     cb_user_data.Str = str;
     cb_user_data.ChainCallback = callback;
     cb_user_data.ChainCallbackUserData = user_data;
-    return InputText(label, (char*)str->c_str(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data);
+    return InputText(label, str->data(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data);
 }
 
 bool ImGui::InputTextMultiline(const char* label, std::string* str, const ImVec2& size, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
@@ -66,7 +66,7 @@ bool ImGui::InputTextMultiline(const char* label, std::string* str, const ImVec2
     cb_user_data.Str = str;
     cb_user_data.ChainCallback = callback;
     cb_user_data.ChainCallbackUserData = user_data;
-    return InputTextMultiline(label, (char*)str->c_str(), str->capacity() + 1, size, flags, InputTextCallback, &cb_user_data);
+    return InputTextMultiline(label, str->data(), str->capacity() + 1, size, flags, InputTextCallback, &cb_user_data);
 }
 
 bool ImGui::InputTextWithHint(const char* label, const char* hint, std::string* str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
@@ -78,7 +78,7 @@ bool ImGui::InputTextWithHint(const char* label, const char* hint, std::string* 
     cb_user_data.Str = str;
     cb_user_data.ChainCallback = callback;
     cb_user_data.ChainCallbackUserData = user_data;
-    return InputTextWithHint(label, hint, (char*)str->c_str(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data);
+    return InputTextWithHint(label, hint, str->data(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data);
 }
 
 #if defined(__clang__)
